@@ -82,3 +82,7 @@ def predict(user_input: InputData):
 @app.get("/ping")
 def ping():
     return {"status": "ok"}
+
+@app.get("/amanda")
+def amanda():
+    return {"she is": "my lovely"}
