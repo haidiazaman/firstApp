@@ -21,3 +21,6 @@
     3. Run locally
     4. Push code to Github
     5. Deploy on render
+ 
+- first version simple --> student performance predictor, random forest regressor trained from https://www.kaggle.com/datasets/spscientist/students-performance-in-exams?resource=download
+- 
