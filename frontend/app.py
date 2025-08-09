@@ -8,7 +8,6 @@ st.set_page_config(
     page_icon="👋",
 )
 
-
 st.title("Welcome to the Student Management App 🎓")
 
 st.write("""
