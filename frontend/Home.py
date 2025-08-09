@@ -1,7 +1,7 @@
 import streamlit as st
 
-PREFIX_URL = "http://127.0.0.1:8000" 
-# PREFIX_URL = "https://firstapp-z6qg.onrender.com"
+# PREFIX_URL = "http://127.0.0.1:8000" 
+PREFIX_URL = "https://firstapp-z6qg.onrender.com"
 
 st.set_page_config(
     page_title="Hello",
