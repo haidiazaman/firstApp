@@ -1,7 +1,9 @@
-import streamlit as st
+import time
 import requests
+import streamlit as st
+from Home import PREFIX_URL
 
-st.title("Student Exam Score Predictor")
+st.title("Predict Exam Score for a Sample Student")
 
 # Input form
 with st.form("input_form"):
@@ -27,10 +29,11 @@ if submit:
 
     with st.spinner("Sending request to backend..."):
         response = requests.post(
-            "https://firstapp-z6qg.onrender.com/predict",
+            f"{PREFIX_URL}/predict",
             headers={"Content-Type": "application/json"},
             json=payload
         )
+        time.sleep(2)
 
     if response.status_code == 200:
         prediction = response.json()["prediction"]

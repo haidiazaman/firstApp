@@ -1,60 +1,64 @@
-from http.client import HTTPException
-from typing import Dict
 import warnings
+
 warnings.filterwarnings("ignore")
-from enum import Enum
-from fastapi import FastAPI 
-from pydantic import BaseModel
 import joblib
 import numpy as np
+from fastapi import FastAPI 
+from http.client import HTTPException
+from sqlmodel import Session, SQLModel, create_engine, select  
+from sql_utils import register_student, select_student_by_name
+from data_models import (
+    StudentCreate, InputData, PredictionResult, Student
+)
 
-# load model and label encoders
+# load model and label encoders 
 model = joblib.load("random_forest_model.joblib")
 encoders = joblib.load("label_encoders.joblib")
 
+# load sql db -- will create if it doesnt exist yet
+sqlite_file_name = "database.db"
+sqlite_url = f"sqlite:///{sqlite_file_name}"
+engine = create_engine(sqlite_url, echo=True)
+SQLModel.metadata.create_all(engine) 
+
 app = FastAPI()
-
-class Gender(str, Enum):
-    FEMALE = "female"
-    MALE = "male"
-
-class RaceEthnicity(str, Enum):
-    GROUP_A = "group A"
-    GROUP_B = "group B"
-    GROUP_C = "group C"
-    GROUP_D = "group D"
-    GROUP_E = "group E"
-
-class ParentalEducation(str, Enum):
-    ASSOCIATES = "associate's degree"
-    BACHELORS = "bachelor's degree"
-    HIGHSCHOOL = "high school"
-    MASTERS = "master's degree"
-    SOME_COLLEGE = "some college"
-    SOME_HIGH_SCHOOL = "some high school"
-
-class Lunch(str, Enum):
-    FREE_REDUCED = "free/reduced"
-    STANDARD = "standard"
-
-class TestPrepCourse(str, Enum):
-    COMPLETED = "completed"
-    NONE = "none"
-
-class InputData(BaseModel):
-    gender: Gender
-    race_ethnicity: RaceEthnicity
-    parental_level_of_education: ParentalEducation
-    lunch: Lunch
-    test_preparation_course: TestPrepCourse
-
-class PredictionResult(BaseModel):
-    user_input: Dict[str, str]
-    prediction: float
 
 @app.get("/")
 def home():
     return "welcome to the homepage"
+
+@app.get("/ping")
+def ping():
+    return {"status": "ok"}
+    
+@app.post("/register")
+def register(student_create: StudentCreate):
+    student = Student.model_validate(student_create)
+    register_student(student=student, engine=engine)
+    return {"message": "Student Registered!"}
+
+@app.get("/view_all_students")
+def view_all_students():
+    with Session(engine) as session:  
+        statement = select(Student)  
+        results = session.exec(statement).all()
+        return [s.model_dump() for s in results]
+
+@app.get("/students/{name}")
+def get_student_by_name(name: str):
+    student = select_student_by_name(name, engine=engine)
+    return student
+
+# put / patch?
+@app.get("/edit")
+def edit():
+    return {"message": "<in progress>"}
+
+# delete --> add auth later
+@app.get("/delete")
+def delete():
+    return {"message": "<in progress>"}
+
 
 @app.get("/get_features")
 def get_features():
@@ -78,11 +82,3 @@ def predict(user_input: InputData):
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
     
     return PredictionResult(user_input=user_input, prediction=prediction)
-
-@app.get("/ping")
-def ping():
-    return {"status": "ok"}
-
-@app.get("/amanda")
-def amanda():
-    return {"she is": "my lovely"}
