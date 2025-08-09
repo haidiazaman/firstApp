@@ -1,5 +1,7 @@
 # firstApp
 
+- backend public URL: https://firstapp-z6qg.onrender.com/
+- frontend public URL: https://firstapp-predict.streamlit.app/ (run this)
 - firstApp to learn about full stack ML / DS
 
 | Area         | Task                                                                           |
